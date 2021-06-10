@@ -23,7 +23,7 @@ public class ReadData {
         m_vector_file = vector_file;
         m_querys_file = querys_file;
         m_keywords_file = keywords_file;
-        key = new KeyGen(300,302).GenerateKey();
+        key = new KeyGen(300,306).GenerateKey();
     }
 
     /**

@@ -8,8 +8,8 @@ import org.nd4j.linalg.inverse.InvertMatrix;
 import java.util.Arrays;
 
 public class KeyGen {
-    int d_plus;
-    int d;
+    public int d_plus;
+    public int d;
 
     INDArray CreatM(){
         INDArray m = Nd4j.rand(d_plus, d_plus);
@@ -30,8 +30,8 @@ public class KeyGen {
     }
 
     float[] CreatW(){
-        float[] W = new float[d_plus - d];
-        for(int i = 0; i < d_plus - d; i++){
+        float[] W = new float[d_plus - d - 1];
+        for(int i = 0; i < d_plus - d - 1; i++){
             W[i] = (float) Math.random();
         }
         return W;

@@ -87,32 +87,31 @@ public class K_means {
             //更新中心点
             //遍历所有簇
 
-            Thread[] threads2 = new Thread[setHashMap.values().size()];
+            Thread[] threads2 = new Thread[k];
             int p = 0;
             for (ArrayList<INDArray> list : setHashMap.values()) {
                 if (list.size() == 0) {
                     continue;
                 }
                 int finalP = p;
-                ArrayList<INDArray> finalList = list;
                 threads2[p] = new Thread() {
                     @Override
                     public void run() {
                         float sum = 0;
-                        int size = finalList.size();
+                        int size = list.size();
                         //遍历所有矩阵的第i行，第j列
                         float[] total = new float[size];
                         Arrays.fill(total, 0);
                         for(int m = 0; m < size;m++){
                             for(int n = m ; n < size;n++){
-                                double res = CosCal.CosCalculate2(finalList.get(m), finalList.get(n));
+                                double res = CosCal.CosCalculate(list.get(m), list.get(n));
                                 total[m] += res;
                                 total[n] += res;
                             }
                         }
                         //获取最小值下标
                         int index = IntStream.range(0, total.length).reduce((m, n) -> total[m] > total[n] ? n : m).getAsInt();
-                        res.set(finalP, finalList.get(index));
+                        res.set(finalP, list.get(index));
                         //res.remove(finalP);
                         //res.add(finalP,list.get(index));
                     }
@@ -143,7 +142,7 @@ public class K_means {
         for (int i = begin; i < end; i++) {
             int j;
             for (j = 0; j < k; j++) {
-                score = CosCal.CosCalculate2(docs.get(i), res.get(j));
+                score = CosCal.CosCalculate(docs.get(i), res.get(j));
                 if (score > min) {
                     index = j;
                     min = score;

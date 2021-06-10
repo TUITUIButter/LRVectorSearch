@@ -15,14 +15,20 @@ public class SecureKnn {
     public Key key;
 
     public INDArray EncWord(INDArray d){
-        d.muli(10);
         INDArray row = d.getRow(0);
         float[] word = row.toFloatVector();
-        float[] wordExtend = Arrays.copyOf(word,word.length+2);
+        float[] wordExtend = Arrays.copyOf(word,key.S.length);
+        float[] queryExtend = Arrays.copyOf(word,key.S.length);
+
+        float[] t = CreatT(key.S.length - word.length - 1);
 
         //扩充向量
-        wordExtend[word.length] = (float) Math.random();;
-        wordExtend[word.length + 1] = 1;
+        float n2 = row.norm2Number().floatValue();
+        wordExtend[word.length] = (-0.5f * n2 * n2);
+        queryExtend[word.length] = 1;
+
+        System.arraycopy(key.W,0,wordExtend,word.length+1,key.W.length);
+        System.arraycopy(t,0,queryExtend,word.length+1,t.length);
 
         //分割
         float[] f1 = new float[wordExtend.length];
@@ -32,16 +38,16 @@ public class SecureKnn {
 
         for(int i = 0; i < wordExtend.length;i++){
             float random = new Random().nextFloat();
-            if(key.S[i] == 1){
+            if(key.S[i] == 0){
                 f1[i] = wordExtend[i];
                 f2[i] = wordExtend[i];
-                f3[i] = 0.5f*wordExtend[i] + random;
-                f4[i] = 0.5f*wordExtend[i] - random;
+                f3[i] = 0.5f*queryExtend[i] + random;
+                f4[i] = 0.5f*queryExtend[i] - random;
             }else {
                 f1[i] = 0.5f*wordExtend[i] + random;
                 f2[i] = 0.5f*wordExtend[i] - random;
-                f3[i] = wordExtend[i];
-                f4[i] = wordExtend[i];
+                f3[i] = queryExtend[i];
+                f4[i] = queryExtend[i];
             }
         }
 
@@ -65,15 +71,28 @@ public class SecureKnn {
         return res;
     }
 
+    float[] CreatT(int len){
+        float[] T = new float[len];
+        for(int i = 0; i < len - 1; i++){
+            T[i] = (float) Math.random();
+        }
+        float sum = 0;
+        for(int i = 0; i < len -1;i++){
+            sum = sum + T[i] * key.W[i];
+        }
+        T[len - 1] = -sum/key.W[len - 1];
+        return T;
+    }
+
     public SecureKnn(Key key){
         this.key = key;
     }
 
     public static void main(String[] args) {
-        SecureKnn secureKnn  = new SecureKnn(new KeyGen(3,5).GenerateKey());
+        SecureKnn secureKnn  = new SecureKnn(new KeyGen(3,6).GenerateKey());
 
-        float[] w1 = {1f,2f,3f};
-        float[] w2 = {1f,2f,3f};
+        float[] w1 = {2f,2f,2f};
+        float[] w2 = {1f,1f,1f};
 
         INDArray w1e = Nd4j.create(w1,new int[]{1, w1.length});
         INDArray w2e = Nd4j.create(w2,new int[]{1, w1.length});
@@ -81,9 +100,11 @@ public class SecureKnn {
         INDArray encRes = secureKnn.EncWord(w1e);
         INDArray encRes2 = secureKnn.EncWord(w2e);
 
-        float cos = CosCal.CosCalculate2(encRes,encRes2);
-        float cos2 = CosCal.CosCalculate(w1e,w2e);
-        System.out.println(cos);
-        System.out.println(cos2);
+        INDArray r1 = encRes.getRow(0).mmul(encRes2.getRow(2));
+        INDArray r2 = encRes.getRow(1).mmul(encRes2.getRow(3));
+        INDArray r = r1.add(r2);
+        System.out.println(r);
+
+
     }
 }

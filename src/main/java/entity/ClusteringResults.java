@@ -24,7 +24,7 @@ public class ClusteringResults {
             cl.sort(new Comparator<INDArray>() {
                 @Override
                 public int compare(INDArray o1, INDArray o2) {
-                    if(CosCal.CosCalculate2(o1,center) > CosCal.CosCalculate2(o2,center)){
+                    if(CosCal.CosCalculate(o1,center) > CosCal.CosCalculate(o2,center)){
                         return -1;
                     }else
                         return 1;

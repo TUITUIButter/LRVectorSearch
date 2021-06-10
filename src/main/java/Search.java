@@ -60,7 +60,7 @@ public class Search {
             double[] score = new double[keywords.size()];
             int i = 0;
             for (INDArray keyword:keywords){
-                score[i] = CosCal.CosCalculate2(q,keyword);
+                score[i] = CosCal.CosCalculate(q,keyword);
                 i++;
             }
             int[] flat = argsort(score, false);
@@ -101,7 +101,7 @@ public class Search {
         for (INDArray q : queries){
             //遍历所有中心
             for (INDArray center : clu.k_meas) {
-                score[ind] = CosCal.CosCalculate2(center, q);
+                score[ind] = CosCal.CosCalculate(center, q);
                 ind++;
             }
             int[] flat = argsort(score,false); //flat就是倒序最近接近的中心下表

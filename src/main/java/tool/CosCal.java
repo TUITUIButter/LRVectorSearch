@@ -4,10 +4,20 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 
 public class CosCal {
     public static float CosCalculate(INDArray arg1, INDArray arg2){
-        //计算余弦相似度
-        float cos_sim = arg1.mmul(arg2.transpose()).getFloat(0,0)/
-                (arg1.norm2Number().floatValue() * arg2.norm2Number().floatValue());
-        return cos_sim;
+        INDArray W1Enc = arg1.getRow(0);
+        INDArray W2Enc = arg1.getRow(1);
+        INDArray Q1Enc = arg1.getRow(2);
+        INDArray Q2Enc = arg1.getRow(3);
+
+        INDArray W3Enc = arg2.getRow(0);
+        INDArray W4Enc = arg2.getRow(1);
+
+
+        INDArray temp1 = W1Enc.sub(W3Enc);
+        INDArray temp2 = W2Enc.sub(W4Enc);
+
+        INDArray res = temp1.mmul(Q1Enc).add(temp2.mmul(Q2Enc));
+        return res.getFloat(0,0);
     }
 
     public static float CosCalculate3(INDArray arg1, INDArray arg2){
