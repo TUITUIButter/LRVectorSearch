@@ -79,14 +79,19 @@ public class K_means {
             }
             for (Thread th : threads) {
                 try {
+                    //th.start();
                     th.join();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+
+            for (int n = 0;n < k;n++){
+                System.out.println(n +": " + setHashMap.get(n).size());
+            }
+
             //更新中心点
             //遍历所有簇
-
             Thread[] threads2 = new Thread[k];
             int p = 0;
             for (ArrayList<INDArray> list : setHashMap.values()) {
@@ -94,17 +99,18 @@ public class K_means {
                     continue;
                 }
                 int finalP = p;
+                ArrayList<INDArray> finalList = list;
                 threads2[p] = new Thread() {
                     @Override
                     public void run() {
                         float sum = 0;
-                        int size = list.size();
+                        int size = finalList.size();
                         //遍历所有矩阵的第i行，第j列
                         float[] total = new float[size];
                         Arrays.fill(total, 0);
                         for(int m = 0; m < size;m++){
                             for(int n = m ; n < size;n++){
-                                double res = CosCal.CosCalculate(list.get(m), list.get(n));
+                                double res = CosCal.CosCalculate(finalList.get(m), finalList.get(n));
                                 total[m] += res;
                                 total[n] += res;
                             }
@@ -118,17 +124,19 @@ public class K_means {
                             }
                         }
                         //获取最小值下标
-                        res.set(finalP, list.get(index));
+                        res.set(finalP, finalList.get(index));
                     }
                 };
-                threads2[p].start();
+                //threads2[p].start();
                 p++;
             }
-
-
+            for (Thread thread : threads2) {
+                thread.start();
+            }
 
             for (Thread thread : threads2) {
                 try {
+                    //thread.start();
                     thread.join();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -141,7 +149,7 @@ public class K_means {
 
     static void CalThead(int begin, int end, int k, Map<Integer, ArrayList<INDArray>> finalSetHashMap, ArrayList<INDArray> docs,
                          ArrayList<INDArray> res) {
-        double max = Double.MAX_VALUE;
+        float max = Float.MAX_VALUE;
         int index = 0;
         float score;
         for (int i = begin; i < end; i++) {
@@ -156,7 +164,7 @@ public class K_means {
             //归类
             finalSetHashMap.get(index).add(docs.get(i));
             index = 0;
-            max = Double.MAX_VALUE;
+            max = Float.MAX_VALUE;
         }
     }
 }

@@ -16,6 +16,8 @@ public class SecureKnn {
 
     public INDArray EncWord(INDArray d){
         INDArray row = d.getRow(0);
+        row.divi(row.norm2Number());
+
         float[] word = row.toFloatVector();
         float[] wordExtend = Arrays.copyOf(word,key.S.length);
         float[] queryExtend = Arrays.copyOf(word,key.S.length);
