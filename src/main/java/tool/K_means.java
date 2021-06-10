@@ -109,11 +109,16 @@ public class K_means {
                                 total[n] += res;
                             }
                         }
+                        float max = Float.MAX_VALUE;
+                        int index = 0;
+                        for (int i = 0; i < size;i++){
+                            if(total[i] < max){
+                                index = i;
+                                max = total[i];
+                            }
+                        }
                         //获取最小值下标
-                        int index = IntStream.range(0, total.length).reduce((m, n) -> total[m] > total[n] ? n : m).getAsInt();
                         res.set(finalP, list.get(index));
-                        //res.remove(finalP);
-                        //res.add(finalP,list.get(index));
                     }
                 };
                 threads2[p].start();
@@ -136,22 +141,22 @@ public class K_means {
 
     static void CalThead(int begin, int end, int k, Map<Integer, ArrayList<INDArray>> finalSetHashMap, ArrayList<INDArray> docs,
                          ArrayList<INDArray> res) {
-        double min = Double.MIN_VALUE;
+        double max = Double.MAX_VALUE;
         int index = 0;
         float score;
         for (int i = begin; i < end; i++) {
             int j;
             for (j = 0; j < k; j++) {
                 score = CosCal.CosCalculate(docs.get(i), res.get(j));
-                if (score > min) {
+                if (score < max) {
                     index = j;
-                    min = score;
+                    max = score;
                 }
             }
             //归类
             finalSetHashMap.get(index).add(docs.get(i));
             index = 0;
-            min = Double.MIN_VALUE;
+            max = Double.MAX_VALUE;
         }
     }
 }

@@ -63,7 +63,7 @@ public class Search {
                 score[i] = CosCal.CosCalculate(q,keyword);
                 i++;
             }
-            int[] flat = argsort(score, false);
+            int[] flat = argsort(score, true);
             for(int r = 0; r < extend_num; r++){
                 extend_querys.add(keywords.get(flat[r]) );
             }
@@ -104,7 +104,7 @@ public class Search {
                 score[ind] = CosCal.CosCalculate(center, q);
                 ind++;
             }
-            int[] flat = argsort(score,false); //flat就是倒序最近接近的中心下表
+            int[] flat = argsort(score,true); //flat就是倒序最近接近的中心下表
             for(int i = 0; i < centerNum;i++){
                 for(int j = 0;j < extendNum;j++){
                     //如果这个类没有足够多元素，就跳过这个类
