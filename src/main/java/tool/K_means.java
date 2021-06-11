@@ -86,10 +86,6 @@ public class K_means {
                 }
             }
 
-            for (int n = 0;n < k;n++){
-                System.out.println(n +": " + setHashMap.get(n).size());
-            }
-
             //更新中心点
             //遍历所有簇
             Thread[] threads2 = new Thread[k];
@@ -134,7 +130,7 @@ public class K_means {
                 try {
                     thread.start();
                 } catch (Exception e) {
-                    System.err.println("某一类为空");
+                    System.err.println("某一类为空，不影响程序运行，可忽略异常报错");
                 }
             }
 

@@ -6,10 +6,10 @@ import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 
 
 public class ReadData {
@@ -75,6 +75,8 @@ public class ReadData {
 
     public HashMap<INDArray, HashMap<String, Double>> read_keywords(int keywords_num, int document_num) {
         HashMap<INDArray, HashMap<String, Double>> inverted_index = new HashMap<>();
+        HashMap<String, INDArray> hashId = new HashMap<>();
+        HashMap<String, HashMap<String, Double>> hash_inverted_index = new HashMap<>();
         List<String> files = new ArrayList<String>();
         File file = new File(m_keywords_file);
         File[] tempList = file.listFiles();
@@ -119,29 +121,38 @@ public class ReadData {
                         doc_cnt++;
                         //如果读取的文档数量达到了目标，则返回
                         if (doc_cnt > document_num) {
+                            //整合
+                            for(String index : hashId.keySet()){
+                                inverted_index.put(hashId.get(index),hash_inverted_index.get(index));
+                            }
                             break READDOCS;
                         }
                     } else {
 
                         /* 这个第一个是分数， 第二个是keyword */
                         // 关键词词向量化
+                        String h = String.valueOf(str_array[1].hashCode());
                         INDArray keyword_vec = m_word2Vec.getWordVectorMatrix(str_array[1]);
                         keyword_vec = secureKnn.EncWord(keyword_vec);
-                        Set<INDArray> keywords_set = inverted_index.keySet();
-                        if (keywords_set.contains(keyword_vec)) {
-                            inverted_index.get(keyword_vec).put(doc_name, Double.valueOf(str_array[0]));
+                        //Set<INDArray> keywords_set = inverted_index.keySet();
+                        Set<String> hash_keywords_set = hash_inverted_index.keySet();
+                        if (hash_keywords_set.contains(h)) {
+                            //inverted_index.get(keyword_vec).put(doc_name, Double.valueOf(str_array[0]));
+                            hash_inverted_index.get(h).put(doc_name, Double.valueOf(str_array[0]));
                         } else {
                             if (flag >= keywords_num) {
-                                continue ;
+                                continue;
                             }
                             HashMap<String, Double> docs_map = new HashMap<>();
                             docs_map.put(doc_name, Double.valueOf(str_array[0]));
-                            inverted_index.put(keyword_vec, docs_map);
+                            //inverted_index.put(keyword_vec, docs_map);
+                            hash_inverted_index.put(h, docs_map);
+                            hashId.put(h,keyword_vec);
                             ++flag;
                         }
                     }
                 }
-                System.out.println("文档数量：" + doc_cnt);
+
                 bf.close();
                 fr.close();
             } catch (IOException e) {
@@ -171,7 +182,31 @@ public class ReadData {
         return query_vec;
     }
 
-//1
+    String getMd5(String input) {
 
+        try {
+            // Static getInstance method is called with hashing MD5
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            // digest() method is called to calculate message digest
+            // of an input digest() return array of byte
+            byte[] messageDigest = md.digest(input.getBytes());
 
+            // Convert byte array into signum representation
+
+            BigInteger no = new BigInteger(1, messageDigest);
+
+            // Convert message digest into hex value
+
+            StringBuilder hashtext = new StringBuilder(no.toString(16));
+
+            while (hashtext.length() < 32) {
+                hashtext.insert(0, "0");
+            }
+            return hashtext.toString();
+        }
+            // For specifying wrong message digest algorithms
+        catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

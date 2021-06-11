@@ -104,10 +104,11 @@ public class Main {
         //bfw.write("\n");
         // 读取词向量
         readData.read_vector();
-
+        System.out.println("开始构建倒排索引.....................");
         startTime = System.currentTimeMillis();
         HashMap<INDArray, HashMap<String, Double>> inverted_index = readData.read_keywords(para.keywordNum, para.docNumber);
         endTime = System.currentTimeMillis();
+        System.out.println("结束构建倒排索引.....................");
         double docTime = endTime - startTime;
         //bfw.write("文档向量化时间： "+ (endTime - startTime) +"ms\n");
 
