@@ -76,7 +76,8 @@ public class SecureKnn {
     float[] CreatT(int len){
         float[] T = new float[len];
         for(int i = 0; i < len - 1; i++){
-            T[i] = (float) Math.random();
+            //T[i] = (float) Math.random();
+            T[i] = key.W[i];
         }
         float sum = 0;
         for(int i = 0; i < len -1;i++){

@@ -131,7 +131,11 @@ public class K_means {
                 p++;
             }
             for (Thread thread : threads2) {
-                thread.start();
+                try {
+                    thread.start();
+                } catch (Exception e) {
+                    System.err.println("某一类为空");
+                }
             }
 
             for (Thread thread : threads2) {

@@ -137,41 +137,39 @@ public class Main {
 
         //方案二聚类
         System.out.println("聚类拓展........................");
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         ArrayList<INDArray> ex_clu = search.query_extend_two_cluster(querys,res, para.extendCenter, para.extendNum);
         System.out.println("query拓展完毕...................");
-        endTime = System.currentTimeMillis();
-        double extendTime = endTime - startTime;
+        endTime = System.nanoTime();
+        double extendTime = (endTime - startTime)/1000000.0;
         //bfw.write("查询词拓展运行时间： "+ (endTime - startTime) +"ms\n");
 
 
         System.out.println("开始执行方案二检索................");
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         search.search_two(ex_clu, inverted_index, para.topK, outPath);
-        endTime = System.currentTimeMillis();
-        double searchTime = endTime - startTime;
+        endTime = System.nanoTime();
+        double searchTime = (endTime - startTime)/1000000.0;
         //bfw.write("查询运行时间： "+ (endTime - startTime) +"ms\n");
 
         // 方案二
         //不用聚类
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         ArrayList<INDArray> extend_querys_two = search.query_extend_two(querys, inverted_index.keySet(), para.extendCenter * para.extendNum);
-        endTime = System.currentTimeMillis();
-        double noCluExtTime = endTime - startTime;
+        endTime = System.nanoTime();
+        double noCluExtTime = (endTime - startTime)/1000000.0;
         //bfw.write("查询拓展运行时间(无聚类)： "+ (endTime - startTime) +"ms\n");
 
 
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         search.search_two(extend_querys_two, inverted_index, para.topK,outPath);
-        endTime = System.currentTimeMillis();
-        double noCluSearchTime = endTime - startTime;
+        endTime = System.nanoTime();
+        double noCluSearchTime = (endTime - startTime)/1000000.0;
         //bfw.write("查询运行时间(无聚类)： "+ (endTime - startTime) +"ms\n");
 
-        csvPrinter.printRecord(paraInfo,docTime,cluTime,queryTime,extendTime,searchTime,noCluExtTime,noCluSearchTime);
+        csvPrinter.printRecord(inverted_index.keySet().size(), para.centerNum,docTime,cluTime,queryTime,extendTime,searchTime,noCluExtTime,noCluSearchTime);
         System.out.flush();
         //bfw.close();
         fw.close();
-
-
     }
 }

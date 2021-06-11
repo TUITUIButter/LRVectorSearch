@@ -19,11 +19,11 @@ public class ReadData {
     private Word2Vec m_word2Vec;      // 词向量文件
     Key key; //knn加密密钥
 
-    public ReadData(String vector_file, String keywords_file,String querys_file) {
+    public ReadData(String vector_file, String keywords_file, String querys_file) {
         m_vector_file = vector_file;
         m_querys_file = querys_file;
         m_keywords_file = keywords_file;
-        key = new KeyGen(300,306).GenerateKey();
+        key = new KeyGen(300, 306).GenerateKey();
     }
 
     /**
@@ -73,7 +73,7 @@ public class ReadData {
      * Hashmap<关键词的词向量, hashmap<文档名，单词在文档的相关分数>>
      */
 
-    public HashMap<INDArray, HashMap<String, Double>> read_keywords(int keywords_num,int document_num) {
+    public HashMap<INDArray, HashMap<String, Double>> read_keywords(int keywords_num, int document_num) {
         HashMap<INDArray, HashMap<String, Double>> inverted_index = new HashMap<>();
         List<String> files = new ArrayList<String>();
         File file = new File(m_keywords_file);
@@ -82,7 +82,7 @@ public class ReadData {
         //生成加密util
         SecureKnn secureKnn = new SecureKnn(key);
 
-        if(tempList == null){
+        if (tempList == null) {
             System.err.println("keywords file wrong!");
             System.exit(-1);
         }
@@ -102,6 +102,7 @@ public class ReadData {
         }
 
         int doc_cnt = 0;
+        int flag = 0;
         READDOCS:
         for (String doc : files) {
             try {
@@ -109,7 +110,6 @@ public class ReadData {
                 BufferedReader bf = new BufferedReader(fr);
                 String str;
                 // 按行读取字符串
-                int flag = 0;
                 String doc_name = "";
                 while ((str = bf.readLine()) != null) {
                     String[] str_array = str.split("\\s+");
@@ -118,24 +118,25 @@ public class ReadData {
                         doc_name = str;
                         doc_cnt++;
                         //如果读取的文档数量达到了目标，则返回
-                        if(doc_cnt > document_num){
+                        if (doc_cnt > document_num) {
                             break READDOCS;
                         }
-                        flag = 0;
                     } else {
+
                         /* 这个第一个是分数， 第二个是keyword */
-                        if (flag < keywords_num) {
-                            // 关键词词向量化
-                            INDArray keyword_vec = m_word2Vec.getWordVectorMatrix(str_array[1]);
-                            keyword_vec = secureKnn.EncWord(keyword_vec);
-                            Set<INDArray> keywords_set = inverted_index.keySet();
-                            if (keywords_set.contains(keyword_vec)) {
-                                inverted_index.get(keyword_vec).put(doc_name, Double.valueOf(str_array[0]));
-                            } else {
-                                HashMap<String, Double> docs_map = new HashMap<>();
-                                docs_map.put(doc_name, Double.valueOf(str_array[0]));
-                                inverted_index.put(keyword_vec, docs_map);
+                        // 关键词词向量化
+                        INDArray keyword_vec = m_word2Vec.getWordVectorMatrix(str_array[1]);
+                        keyword_vec = secureKnn.EncWord(keyword_vec);
+                        Set<INDArray> keywords_set = inverted_index.keySet();
+                        if (keywords_set.contains(keyword_vec)) {
+                            inverted_index.get(keyword_vec).put(doc_name, Double.valueOf(str_array[0]));
+                        } else {
+                            if (flag >= keywords_num) {
+                                continue ;
                             }
+                            HashMap<String, Double> docs_map = new HashMap<>();
+                            docs_map.put(doc_name, Double.valueOf(str_array[0]));
+                            inverted_index.put(keyword_vec, docs_map);
                             ++flag;
                         }
                     }
