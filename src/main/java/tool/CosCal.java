@@ -1,6 +1,9 @@
 package tool;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
+import java.util.ArrayList;
 
 public class CosCal {
     public static float CosCalculate3(INDArray arg1, INDArray arg2){
@@ -50,6 +53,32 @@ public class CosCal {
             sum4 = sum4 + f2[0][i]*f2[2][i] + f2[1][i]*f2[3][i];
         }
         float res = (sum1+sum2)/((float) Math.pow(sum3,0.5) * (float) Math.pow(sum4,0.5));
+        return res;
+    }
+
+    public static float[] CosCalculateList(INDArray ind,ArrayList<INDArray> list){
+        ArrayList<INDArray> a1 = new ArrayList<>();
+        ArrayList<INDArray> a2 = new ArrayList<>();
+        for(INDArray e:list){
+            a1.add(ind.getRow(0).sub(e.getRow(0)));
+            a2.add(ind.getRow(1).sub(e.getRow(1)));
+        }
+        INDArray b1 = Nd4j.vstack(a1);
+        INDArray b2 = Nd4j.vstack(a2);
+
+        INDArray res = b1.mmul(ind.getRow(2)).add(b2.mmul(ind.getRow(3)));
+        return res.toFloatVector();
+    }
+
+    public static float[][] CosCalculateSet(ArrayList<INDArray> list){
+        float[][] res = new float[list.size()][list.size()];
+        for(int i = 0; i  < list.size() - 1;i++){
+            float[] temp = CosCalculateList(list.get(i),new ArrayList<>(list.subList(i+1, list.size())));
+            for(int j = 0 ;j < temp.length;j++){
+                res[i][i + j + 1] = temp[j];
+                res[i + j + 1][i] = temp[j];
+            }
+        }
         return res;
     }
 }

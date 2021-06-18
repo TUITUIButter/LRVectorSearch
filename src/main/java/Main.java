@@ -112,6 +112,19 @@ public class Main {
         double docTime = endTime - startTime;
         //bfw.write("文档向量化时间： "+ (endTime - startTime) +"ms\n");
 
+        for(int k = 0; k < 9;k++){
+            System.out.println("开始聚类.....................");
+            System.out.println("关键词集合大小: " + inverted_index.keySet().size());
+            startTime = System.currentTimeMillis();
+            ArrayList<INDArray> in = new ArrayList<>(inverted_index.keySet() );
+            Set<INDArray> s = new HashSet<>(in.subList(0,k*500+1000));
+            ClusteringResults res = K_means.k_means(s,-1,-1, para.centerNum, para.centerIt, para.threadNum);
+            endTime = System.currentTimeMillis();
+            System.out.println("结束聚类.....................");
+            double cluTime = endTime - startTime;
+            System.out.println((k*500+1000) +": "+cluTime);
+            //bfw.write("聚类运行时间： "+ (endTime - startTime) +"ms\n");
+        }
         //聚类
         System.out.println("开始聚类.....................");
         System.out.println("关键词集合大小: " + inverted_index.keySet().size());

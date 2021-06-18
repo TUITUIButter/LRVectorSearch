@@ -5,6 +5,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import tool.CosCal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,8 +17,8 @@ public class Test {
         SecureKnn secureKnn  = new SecureKnn(new KeyGen(3,7).GenerateKey());
 
         float[] w1 = {1f,2f,3f};
-        float[] w2 = {1f,2f,3f};
-        float[] w3 = {1f,2f,4f};
+        float[] w2 = {1f,5f,7f};
+        float[] w3 = {1f,2f,7f};
         float[] w4 = {1f,2f,-1f};
 
         INDArray w1e = Nd4j.create(w1,new int[]{1, w1.length});
@@ -49,6 +50,15 @@ public class Test {
         System.out.println("1-3: " + cos_13 + "\t\tr1-3: "+cos3_13);
         System.out.println("1-4: " + cos_14 + "\t\tr1-4: "+cos3_14);
 
+        ArrayList<INDArray> arrayList = new ArrayList<>();
+
+        arrayList.add(encRes);
+        arrayList.add(encRes2);
+        arrayList.add(encRes3);
+        arrayList.add(encRes4);
+
+        float[][] s = CosCal.CosCalculateSet(arrayList);
+        System.out.println(Arrays.deepToString(s));
 
     }
 
