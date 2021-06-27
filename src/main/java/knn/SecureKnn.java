@@ -15,6 +15,8 @@ public class SecureKnn {
     public Key key;
 
     public INDArray EncWord(INDArray d){
+
+        // INDArray part = d.get(NDArrayIndex.all(),NDArrayIndex.interval(0,1,100));
         INDArray row = d.getRow(0);
         row.divi(row.norm2Number());
 

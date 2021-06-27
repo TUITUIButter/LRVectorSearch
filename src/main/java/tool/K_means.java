@@ -10,14 +10,7 @@ import java.util.stream.IntStream;
 
 public class K_means {
 
-    public static ClusteringResults k_means(Set<INDArray> set, int begin, int end, int k, int it, int threadNum) {
-
-        if (begin == -1) {
-            begin = 0;
-        }
-        if (end == -1) {
-            end = 300;
-        }
+    public static ClusteringResults k_means(Set<INDArray> set, int k, int it, int threadNum) {
 
         ArrayList<INDArray> docs = new ArrayList<>(set);
 

@@ -187,7 +187,7 @@ public class Search {
      */
     public void search_two(
         ArrayList<INDArray> extern_querys,
-        HashMap<INDArray, HashMap<String, Double>> inverted_index, int k, String outPath)
+        HashMap<INDArray, HashMap<String, Double>> inverted_index, int k, String outPath,String name)
     {
         Map<String, Double> rank_map = new HashMap<>();
         // 开始检索
@@ -218,10 +218,8 @@ public class Search {
         try {
             FileWriter fw = new FileWriter(file,true);
             BufferedWriter bfw = new BufferedWriter(fw);
-            bfw.write("/********************************************/\n");
-            bfw.write("top-"+ k +" 文档排序结果：\n");
             for (int i = 0; i < k;  i++) {
-                bfw.write(list.get(i).getKey()+":"+list.get(i).getValue());
+                bfw.write(name+" " + list.get(i).getKey()+" "+list.get(i).getValue());
                 bfw.newLine();
             }
             bfw.write("\n\n");

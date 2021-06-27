@@ -32,47 +32,6 @@ public class Main {
         new Main().HandleWithOutPut(para,outPath);
     }
 
-    void Handle(ParaBean para, String outPath) throws IOException {
-        ReadData readData = new ReadData(
-                para.wordVectorPath,
-                para.docDictionaryPath,
-                para.queryPath
-        );
-        FileWriter fw = null;
-        BufferedWriter bfw = null;
-        try{
-            fw = new FileWriter(outPath + "/time.txt");
-            bfw = new BufferedWriter(fw);
-        }catch (Exception e){
-            e.printStackTrace();
-            System.exit(-1);
-        }
-
-
-        // 读取词向量
-        readData.read_vector();
-
-        // 读取文档
-        HashMap<INDArray, HashMap<String, Double>> inverted_index = readData.read_keywords(para.keywordNum, para.docNumber);
-
-        //聚类
-        ClusteringResults res = K_means.k_means(inverted_index.keySet(),-1,-1, para.centerNum, para.centerIt, para.threadNum);
-
-        //读取查询
-        ArrayList<INDArray> querys = readData.read_querys();
-
-        Search search = new Search();
-        //拓展查询词
-        ArrayList<INDArray> ex_clu = search.query_extend_two_cluster(querys,res, para.extendCenter, para.extendNum);
-
-        //查询
-        search.search_two(ex_clu, inverted_index, para.topK, outPath);
-
-        bfw.close();
-        fw.close();
-    }
-
-
     void HandleWithOutPut(ParaBean para, String outPath) throws IOException {
         ReadData readData = new ReadData(
                 para.wordVectorPath,
@@ -85,9 +44,6 @@ public class Main {
         CSVPrinter csvPrinter = null;
         try{
             fw = new FileWriter(outPath + "/time.csv",true);
-
-            String[] head= {"参数信息","文档向量化时间","聚类向量化时间" ,"query向量化时间","查询词拓展运行时间","查询拓展运行时间(无聚类)" ,
-                    "查询运行时间(无聚类)"};
             csvPrinter = new CSVPrinter(fw, CSVFormat.DEFAULT);
             //bfw = new BufferedWriter(fw);
         }catch (Exception e){
@@ -112,76 +68,80 @@ public class Main {
         double docTime = endTime - startTime;
         //bfw.write("文档向量化时间： "+ (endTime - startTime) +"ms\n");
 
-        for(int k = 0; k < 9;k++){
-            System.out.println("开始聚类.....................");
-            System.out.println("关键词集合大小: " + inverted_index.keySet().size());
-            startTime = System.currentTimeMillis();
-            ArrayList<INDArray> in = new ArrayList<>(inverted_index.keySet() );
-            Set<INDArray> s = new HashSet<>(in.subList(0,k*500+1000));
-            ClusteringResults res = K_means.k_means(s,-1,-1, para.centerNum, para.centerIt, para.threadNum);
-            endTime = System.currentTimeMillis();
-            System.out.println("结束聚类.....................");
-            double cluTime = endTime - startTime;
-            System.out.println((k*500+1000) +": "+cluTime);
-            //bfw.write("聚类运行时间： "+ (endTime - startTime) +"ms\n");
-        }
+//        for(int k = 2; k <= 8;k++){
+//            System.out.println("开始聚类.....................");
+//            System.out.println("关键词集合大小: " + inverted_index.keySet().size());
+//            startTime = System.currentTimeMillis();
+//            ClusteringResults res = K_means.k_means(inverted_index.keySet(),-1,-1, 32*k, para.centerIt, para.threadNum);
+//            endTime = System.currentTimeMillis();
+//            System.out.println("结束聚类.....................");
+//            double cluTime = endTime - startTime;
+//            System.out.println((32*k) +": "+cluTime);
+//            //bfw.write("聚类运行时间： "+ (endTime - startTime) +"ms\n");
+//        }
+
         //聚类
-        System.out.println("开始聚类.....................");
+        System.out.println("开始聚类............................");
         System.out.println("关键词集合大小: " + inverted_index.keySet().size());
         startTime = System.currentTimeMillis();
-        ClusteringResults res = K_means.k_means(inverted_index.keySet(),-1,-1, para.centerNum, para.centerIt, para.threadNum);
+        ClusteringResults res = K_means.k_means(inverted_index.keySet(),para.centerNum, para.centerIt, para.threadNum);
         endTime = System.currentTimeMillis();
-        System.out.println("结束聚类.....................");
+        System.out.println("结束聚类............................");
         double cluTime = endTime - startTime;
         //bfw.write("聚类运行时间： "+ (endTime - startTime) +"ms\n");
 
         Search search = new Search();
 
-        // 方案一词向量拓展
-        //ArrayList<ArrayList<INDArray>> extend_querys_one = search.query_extend_one(querys, inverted_index.keySet(), 10);
-        //search.search_one(extend_querys_one, inverted_index, 10);
-
         System.out.println("开始读取查询........................");
         startTime = System.currentTimeMillis();
-        ArrayList<INDArray> querys = readData.read_querys();
+        File qPath = new File(para.queryPath);
+        File[] tempList = qPath.listFiles();
+        List<String> files = new ArrayList<String>();
+        if (tempList == null) {
+            System.err.println("file wrong!");
+            System.exit(-1);
+        }
+        for (File value : tempList) {
+            if (value.isFile()) {
+                files.add(value.toString());
+            }
+            if (value.isDirectory()) {
+                //这里就不递归了，
+                String q = value.toString() + "\\desc.txt";
+                files.add(q);
+            }
+        }
+
+        for(String queries: files){
+            String[] sp = queries.split("\\\\");
+            String name = sp[sp.length - 2];
+            ArrayList<INDArray> querys = readData.read_querys(queries);
+            System.out.println(name+" 拓展..........................");
+            ArrayList<INDArray> ex_clu = search.query_extend_two_cluster(querys,res, para.extendCenter, para.extendNum);
+            System.out.println(name +" query拓展完毕....................");
+            System.out.println(name +" 开始执行方案二检索.................");
+            search.search_two(ex_clu, inverted_index, para.topK, outPath,name);
+        }
         endTime = System.currentTimeMillis();
-        System.out.println("读取查询结束........................");
+        System.out.println("读取查询结束.........................");
         double queryTime = endTime - startTime;
-        //bfw.write("query向量化时间： "+ (endTime - startTime) +"ms\n");
-
-        //方案二聚类
-        System.out.println("聚类拓展........................");
-        startTime = System.nanoTime();
-        ArrayList<INDArray> ex_clu = search.query_extend_two_cluster(querys,res, para.extendCenter, para.extendNum);
-        System.out.println("query拓展完毕...................");
-        endTime = System.nanoTime();
-        double extendTime = (endTime - startTime)/1000000.0;
-        //bfw.write("查询词拓展运行时间： "+ (endTime - startTime) +"ms\n");
-
-
-        System.out.println("开始执行方案二检索................");
-        startTime = System.nanoTime();
-        search.search_two(ex_clu, inverted_index, para.topK, outPath);
-        endTime = System.nanoTime();
-        double searchTime = (endTime - startTime)/1000000.0;
-        //bfw.write("查询运行时间： "+ (endTime - startTime) +"ms\n");
 
         // 方案二
         //不用聚类
-        startTime = System.nanoTime();
-        ArrayList<INDArray> extend_querys_two = search.query_extend_two(querys, inverted_index.keySet(), para.extendCenter * para.extendNum);
-        endTime = System.nanoTime();
-        double noCluExtTime = (endTime - startTime)/1000000.0;
+//        startTime = System.nanoTime();
+//        ArrayList<INDArray> extend_querys_two = search.query_extend_two(querys, inverted_index.keySet(), para.extendCenter * para.extendNum);
+//        endTime = System.nanoTime();
+//        double noCluExtTime = (endTime - startTime)/1000000.0;
         //bfw.write("查询拓展运行时间(无聚类)： "+ (endTime - startTime) +"ms\n");
 
 
-        startTime = System.nanoTime();
-        search.search_two(extend_querys_two, inverted_index, para.topK,outPath);
-        endTime = System.nanoTime();
-        double noCluSearchTime = (endTime - startTime)/1000000.0;
+//        startTime = System.nanoTime();
+//        search.search_two(extend_querys_two, inverted_index, para.topK,outPath);
+//        endTime = System.nanoTime();
+//        double noCluSearchTime = (endTime - startTime)/1000000.0;
         //bfw.write("查询运行时间(无聚类)： "+ (endTime - startTime) +"ms\n");
 
-        csvPrinter.printRecord(inverted_index.keySet().size(), para.centerNum,docTime,cluTime,queryTime,extendTime,searchTime,noCluExtTime,noCluSearchTime);
+        csvPrinter.printRecord(inverted_index.keySet().size(), para.centerNum,docTime,cluTime,queryTime);
         System.out.flush();
         //bfw.close();
         fw.close();

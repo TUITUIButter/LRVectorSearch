@@ -40,17 +40,18 @@ public class TestKmeans
         System.out.println("开始构建倒排索引.....................");
         startTime = System.currentTimeMillis();
         HashMap<INDArray, HashMap<String, Double>> inverted_index = readData.read_keywords(para.keywordNum, para.docNumber);
-        endTime = System.currentTimeMillis();
-        System.out.println("结束构建倒排索引.....................");
-        double docTime = endTime - startTime;
-
-        //聚类
-        System.out.println("开始聚类中心测试.....................");
-        System.out.println("关键词集合大小: " + inverted_index.keySet().size());
-        startTime = System.currentTimeMillis();
-        double[] res = K_means.k_cal(inverted_index.keySet(), para.threadNum);
-        endTime = System.currentTimeMillis();
-        System.out.println("结束聚类中心测试.....................");
-        System.out.println(Arrays.toString(res));
+        readData.SaveVec(10,10);
+//        endTime = System.currentTimeMillis();
+//        System.out.println("结束构建倒排索引.....................");
+//        double docTime = endTime - startTime;
+//
+//        //聚类
+//        System.out.println("开始聚类中心测试.....................");
+//        System.out.println("关键词集合大小: " + inverted_index.keySet().size());
+//        startTime = System.currentTimeMillis();
+//        double[] res = K_means.k_cal(inverted_index.keySet(), para.threadNum);
+//        endTime = System.currentTimeMillis();
+//        System.out.println("结束聚类中心测试.....................");
+//        System.out.println(Arrays.toString(res));
     }
 }

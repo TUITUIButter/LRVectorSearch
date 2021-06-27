@@ -41,9 +41,9 @@ public class ReadData {
      *
      * @return String[]
      */
-    public ArrayList<INDArray> read_querys() {
+    public ArrayList<INDArray> read_querys(String path) {
         String encoding = "UTF-8";
-        File file = new File(m_querys_file);
+        File file = new File(path);
         Long filelength = file.length();
         byte[] filecontent = new byte[filelength.intValue()];
         try {
@@ -207,6 +207,78 @@ public class ReadData {
             // For specifying wrong message digest algorithms
         catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void SaveVec(int keywords_num, int document_num){
+        List<String> files = new ArrayList<>();
+        File file = new File(m_keywords_file);
+        File[] tempList = file.listFiles();
+
+        //生成加密util
+        SecureKnn secureKnn = new SecureKnn(key);
+
+        if (tempList == null) {
+            System.err.println("keywords file wrong!");
+            System.exit(-1);
+        }
+        for (File value : tempList) {
+            if (value.isFile()) {
+                files.add(value.toString());
+            }
+            if (value.isDirectory()) {
+                //这里就不递归了，
+                File tempFile = new File(value.toString());
+                File[] subject = tempFile.listFiles();
+                assert subject != null;
+                for (File doc : subject) {
+                    files.add(doc.toString());
+                }
+            }
+        }
+        int doc_cnt = 0;
+        READDOCS:
+        for (String doc : files) {
+            try {
+                FileReader fr = new FileReader(doc);
+                BufferedReader bf = new BufferedReader(fr);
+
+                FileWriter fw = new FileWriter("out.txt",true);
+                BufferedWriter bfw = new BufferedWriter(fw);
+                String str;
+                // 按行读取字符串
+                String doc_name = "";
+                while ((str = bf.readLine()) != null) {
+                    String[] str_array = str.split("\\s+");
+                    if (str_array.length == 1) {
+                        /* 文档名 */
+                        doc_name = str;
+                        doc_cnt++;
+                        bfw.write(doc_name + "\n");
+                        //如果读取的文档数量达到了目标，则返回
+                        if (doc_cnt > document_num) {
+                            bfw.close();
+                            fw.close();
+                            break READDOCS;
+                        }
+                    } else {
+
+                        /* 这个第一个是分数， 第二个是keyword */
+                        // 关键词词向量化
+                        INDArray keyword_vec = m_word2Vec.getWordVectorMatrix(str_array[1]);
+                        bfw.write(str_array[0] + " ");
+                        bfw.write(Arrays.deepToString(keyword_vec.toFloatMatrix()));
+                        bfw.newLine();
+                    }
+                }
+
+                bf.close();
+                fr.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
+
         }
     }
 }
